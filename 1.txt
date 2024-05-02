@@ -1,0 +1,906 @@
+// Hamming Code
+#include <bits/stdc++.h>
+using namespace std;
+
+// Function to convert character to 8-bit ASCII code
+string charToAscii(char c) {
+    bitset<8> bits(c);
+    return bits.to_string();
+}
+
+// Function to encode data using Hamming Code
+string encodeHamming(const string& data) {
+    int n = data.size();
+    int m = 0;
+    // Calculate number of redundant bits
+    while (pow(2, m) < n + m + 1) {
+        m++;
+    }
+
+    string encodedData(n + m, '0');
+    int j = 0;
+    // Fill the encoded data with original data bits
+    for (int i = 0; i < n + m; i++) {
+        if (!((i + 1) & (i + 2))) { // If position is a power of 2, skip it (redundant bit)
+            continue;
+        }
+        encodedData[i] = data[j++];
+    }
+
+    // Fill the redundant bits
+    for (int i = 0; i < m; i++) {
+        int p = pow(2, i) - 1; // Position of the redundant bit
+        int count = 0;
+        // Calculate XOR of bits at positions which include the redundant bit
+        for (int j = p; j < n + m; j += (pow(2, i + 1))) {
+            for (int k = 0; k < pow(2, i) && j + k < n + m; k++) {
+                if (encodedData[j + k] == '1') {
+                    count++;
+                }
+            }
+        }
+        // Set the redundant bit to 1 if count is odd, else 0
+        encodedData[p] = (count % 2 == 1) ? '1' : '0';
+    }
+
+    return encodedData;
+}
+
+// Function to decode Hamming encoded data
+string decodeHamming(string& data) {
+    int m = 0;
+    // Calculate number of redundant bits
+    while (pow(2, m) < data.size() + 1) {
+        m++;
+    }
+
+    string decodedData = data;
+    // Correct any errors
+    for (int i = 0; i < m; i++) {
+        int p = pow(2, i) - 1; // Position of the redundant bit
+        int count = 0;
+        // Calculate XOR of bits at positions which include the redundant bit
+        for (int j = p; j < data.size(); j += (pow(2, i + 1))) {
+            for (int k = 0; k < pow(2, i) && j + k < data.size(); k++) {
+                if (data[j + k] == '1') {
+                    count++;
+                }
+            }
+        }
+        // If count is odd, flip the bit at the error position
+        if (count % 2 == 1) {
+            decodedData[p] = (decodedData[p] == '1') ? '0' : '1';
+        }
+    }
+
+    // Remove redundant bits
+    string decoded;
+    for (int i = 0; i < decodedData.size(); i++) {
+        if (!((i + 1) & (i + 2))) { // If position is a power of 2, skip it (redundant bit)
+            continue;
+        }
+        decoded += decodedData[i];
+    }
+
+    return decoded;
+}
+
+int main() {
+    string message;
+    cout << "Enter message: ";
+    getline(cin, message);
+
+    // Convert message to ASCII and store in a text file
+    ofstream outFile("data.txt");
+    for (char c : message) {
+        outFile << charToAscii(c) << " ";
+    }
+    outFile << endl;
+
+    // Encode the message using Hamming Code
+    string encodedMessage = encodeHamming(message);
+    outFile << encodedMessage << endl;
+    outFile.close();
+
+    // Read encoded message from file for receiver
+    ifstream inFile("data.txt");
+    string receivedMessage;
+    // Skip first two lines (ASCII and encoded message)
+    getline(inFile, receivedMessage); // Skip ASCII line
+    getline(inFile, receivedMessage); // Read encoded message
+    inFile.close();
+
+    // Decode the received message
+    string decodedMessage = decodeHamming(receivedMessage);
+
+    bool error = (decodedMessage != message);
+
+    // Write error status to file
+    ofstream errorFile("data.txt", ios::app);
+    errorFile << (error ? "error" : "no error") << endl;
+    errorFile.close();
+
+    cout << (error ? "Error detected!" : "No error detected.") << endl;
+
+    return 0;
+}
+
+
+
+
+
+
+// CRC
+#include <bits/stdc++.h>
+using namespace std;
+
+// Function to convert character to 8-bit ASCII code
+string charToAscii(char c) {
+    bitset<8> bits(c);
+    return bits.to_string();
+}
+
+// Function to calculate CRC
+string calculateCRC(const string& data, const string& polynomial) {
+    int polyLength = polynomial.size();
+    int dataLength = data.size();
+    string dividend = data + string(polyLength - 1, '0'); // Append zeros for division
+
+    for (int i = 0; i <= dataLength; i++) {
+        if (dividend[i] == '1') {
+            // XOR the polynomial with dividend
+            for (int j = 0; j < polyLength; j++) {
+                dividend[i + j] = (dividend[i + j] == polynomial[j]) ? '0' : '1';
+            }
+        }
+    }
+    // Return the CRC remainder
+    return dividend.substr(dataLength);
+}
+
+int main() {
+    string message;
+    cout << "Enter message: ";
+    getline(cin, message);
+
+    // Convert message to ASCII and store in a text file
+    ofstream outFile("data.txt");
+    for (char c : message) {
+        outFile << charToAscii(c) << " ";
+    }
+    outFile << endl;
+
+    // Generate CRC for the message
+    string polynomial = "1001"; // CRC polynomial (example)
+    string crc = calculateCRC(message, polynomial);
+    outFile << crc << endl;
+    outFile.close();
+
+    // Read CRC from file for receiver
+    ifstream inFile("data.txt");
+    string receivedMessage;
+    // Skip first two lines (ASCII and CRC)
+    getline(inFile, receivedMessage); // Skip ASCII line
+    getline(inFile, receivedMessage); // Read CRC
+    inFile.close();
+
+    // Calculate CRC for received message
+    string receivedCRC = calculateCRC(receivedMessage, polynomial);
+
+    // Check for errors
+    bool error = (receivedCRC != "000"); // If remainder is non-zero, error detected
+
+    // Write error status to file
+    ofstream errorFile("data.txt", ios::app);
+    errorFile << (error ? "error" : "no error") << endl;
+    errorFile.close();
+
+    // Display error status
+    cout << (error ? "Error detected!" : "No error detected.") << endl;
+
+    return 0;
+}
+
+
+
+
+
+
+// Checksum
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <bitset>
+
+using namespace std;
+
+// Function to convert character to 8-bit ASCII code
+string charToAscii(char c) {
+    bitset<8> bits(c);
+    return bits.to_string();
+}
+
+// Function to calculate checksum
+string calculateChecksum(const string& data) {
+    int checksum = 0;
+    // Calculate sum of ASCII values
+    for (char c : data) {
+        checksum += static_cast<int>(c);
+    }
+    // Convert checksum to binary and take the 1's complement
+    bitset<16> binaryChecksum(checksum);
+    binaryChecksum = ~binaryChecksum;
+    return binaryChecksum.to_string().substr(0, 8); // Take only the least significant 8 bits
+}
+
+int main() {
+    string message;
+    cout << "Enter message: ";
+    getline(cin, message);
+
+    // Convert message to ASCII and store in a text file
+    ofstream outFile("data.txt");
+    for (char c : message) {
+        outFile << charToAscii(c) << " ";
+    }
+    outFile << endl;
+
+    // Calculate checksum for the message
+    string checksum = calculateChecksum(message);
+    outFile << checksum << endl;
+    outFile.close();
+
+    // Read checksum from file for receiver
+    ifstream inFile("data.txt");
+    string receivedMessage;
+    // Skip first two lines (ASCII and checksum)
+    getline(inFile, receivedMessage); // Skip ASCII line
+    getline(inFile, receivedMessage); // Read checksum
+    inFile.close();
+
+    // Calculate checksum for received message
+    string receivedChecksum = calculateChecksum(receivedMessage);
+
+    // Check for errors
+    bool error = (receivedChecksum != "00000000"); // If checksum is non-zero, error detected
+
+    // Write error status to file
+    ofstream errorFile("data.txt", ios::app);
+    errorFile << (error ? "error" : "no error") << endl;
+    errorFile.close();
+
+    cout << (error ? "Error detected!" : "No error detected.") << endl;
+
+    return 0;
+}
+
+
+
+
+
+// Block Coding
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <bitset>
+#include <algorithm>
+
+using namespace std;
+
+// Function to convert character to 8-bit ASCII code
+string charToAscii(char c) {
+    bitset<8> bits(c);
+    return bits.to_string();
+}
+
+// Function to encode data using block coding
+string encodeBlock(const string& data) {
+    string encodedData;
+    // Encode each character separately
+    for (char c : data) {
+        string ascii = charToAscii(c);
+        reverse(ascii.begin(), ascii.end()); // Reverse the bits to maintain order during decoding
+        encodedData += ascii;
+    }
+    return encodedData;
+}
+
+// Function to decode data using block coding
+string decodeBlock(const string& data) {
+    string decodedData;
+    // Decode each character separately
+    for (int i = 0; i < data.size(); i += 8) {
+        string ascii = data.substr(i, 8);
+        reverse(ascii.begin(), ascii.end()); // Reverse back to original order
+        bitset<8> bits(ascii);
+        char c = char(bits.to_ulong());
+        decodedData += c;
+    }
+    return decodedData;
+}
+
+int main() {
+    string message;
+    cout << "Enter message: ";
+    getline(cin, message);
+
+    // Convert message to ASCII and store in a text file
+    ofstream outFile("data.txt");
+    for (char c : message) {
+        outFile << charToAscii(c) << " ";
+    }
+    outFile << endl;
+
+    // Encode the message using block coding
+    string encodedMessage = encodeBlock(message);
+    outFile << encodedMessage << endl;
+    outFile.close();
+
+    // Read encoded message from file for receiver
+    ifstream inFile("data.txt");
+    string receivedMessage;
+    // Skip first two lines (ASCII and encoded message)
+    getline(inFile, receivedMessage); // Skip ASCII line
+    getline(inFile, receivedMessage); // Read encoded message
+    inFile.close();
+
+    // Decode the received message
+    string decodedMessage = decodeBlock(receivedMessage);
+
+    // Check for errors
+    bool error = (decodedMessage != message);
+
+    // Write error status to file
+    ofstream errorFile("data.txt", ios::app);
+    errorFile << (error ? "error" : "no error") << endl;
+    errorFile.close();
+
+    // Display error status
+    cout << (error ? "Error detected!" : "No error detected.") << endl;
+
+    return 0;
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+Encoding Schemes:
+
+
+// NRZ - Unipolar
+clear;
+close;
+clc;
+clf;
+
+x = [1 0 1 0 0 1 1 0];
+
+z=0; //Starting value on x axis 
+for i=1:length(x)
+    t=[z:1:z+1] //Set of x cordinates for current bit duration
+    subplot(2,1,1)
+    a=gca();
+    a.data_bounds=[0,-1.5;length(x),1.5] // Length of x and y axis
+    a.grid=[1,-1]
+    title("Data")
+    plot(t,x(i)) //Plot current data bit
+    
+    subplot(2,1,2)
+    a=gca();
+    a.data_bounds=[0,-1.5;length(x),1.5]
+    a.grid=[1,-1]
+    title("NRZ")
+    
+    if(x(i)==0)
+        plot(t,0)
+    else
+        plot(t,1)
+    end
+    
+    z=z+1
+end
+
+
+
+// RZ Polar
+clear;
+close;
+clc;
+clf;
+
+//Data Stream
+x = [1 0 1 0 0 1 1 0];
+
+//NRZ
+z=0; //Starting value on x axis 
+ob=-1;
+
+for i=1:1:length(x)
+    subplot(2,1,1) // Data Plot
+        a=gca();
+        a.data_bounds=[0,-1.5;length(x),1.5]
+        a.grid=[1,-1]
+        title('Data')
+    
+        t=[z:1:z+1]
+        plot(t,x(i))
+    
+    subplot(2,1,2)//Bipolar Bipolar RZ
+        a=gca();
+        a.data_bounds=[0,-1.5;length(x),1.5]
+        a.grid=[1,-1]
+        title('Bipolar RZ')
+        
+        if(x(i)==0)
+            t=[z:0.5:z+0.5]
+            ob=-ob
+            plot(t,ob)
+            t=[z+0.5:0.5:z+1]
+            plot(t,0)
+        else
+             t=[z:0.5:z+0.5]
+             ob=-ob
+             plot(t,ob)
+             t=[z+0.5:0.5:z+1]
+             plot(t,0)
+        end
+        
+        z=z+1
+end
+
+
+
+//Manchester
+clear;
+close;
+clc;
+clf;
+
+//Data Stream
+x = [1 0 1 0 0 1 1 0];
+
+//NRZ
+z=0; //Starting value on x axis 
+
+for i=1:1:length(x)
+    subplot(2,1,1) // Data Plot
+        a=gca();
+        a.data_bounds=[0,-1.5;length(x),1.5]
+        a.grid=[1,-1]
+        title('Data')
+    
+        t=[z:1:z+1]
+        plot(t,x(i))
+    
+    t=[z:0.5:z+0.5]
+    subplot(2,1,2
+        a=gca();
+        a.data_bounds=[0,-1.5;length(x),1.5]
+        a.grid=[1,-1]
+        title('Manchester')
+        
+        if(x(i)==0)
+            plot(t,1)
+            t=[z+0.5:0.5:z+1]
+            plot(t,-1)
+            
+        else
+            plot(t,-1)
+            t=[z+0.5:0.5:z+1]
+            plot(t,1)
+        end
+        
+        z=z+1
+end
+
+
+
+// AMI and PesudoTernary
+clear;
+clc;
+x=[0,0,1,1,1,0,1,0];
+z=0;
+prev=-1;
+prev1=1
+subplot(3,1,1);
+a=gca();
+a.data_bounds=[0,-1.5;length(x),1.5];
+a.grid=[1,-1];
+title('Data');
+for i=1:length(x)
+    t=[z:1:z+1];  
+    if(x(i)==0)
+        plot(t,0);
+    else
+        plot(t,1);
+    end
+    z=z+1;
+end
+
+subplot(3,1,2);
+a=gca();
+a.data_bounds=[0,-1.5;length(x),1.5];
+a.grid=[1,-1];
+title('AMI');
+z=0;
+for i=1:length(x)
+    t=[z:1:z+1];
+    if(x(i)==0)
+        plot(t,0);
+    else
+        if(prev==1)
+            plot(t,-1);
+            prev=-1;
+        else
+            plot(t,1);
+            prev=1;
+        end
+    end
+    if(i~=length(x) && x(i)==1 && x(i+1)==1)
+        plot([z+1 z+1], [-1 1]);
+    end
+    if(i~=length(x) && x(i)~=x(i+1) && x(i)==1)
+        if(prev==1)
+            plot([z+1 z+1]', [0 prev]');
+        else
+            plot([z+1 z+1]', [prev 0]');
+        end
+    end
+    if(i~=length(x) && x(i)==0 && x(i+1)==1)
+        if(prev==1)
+            plot([z+1 z+1]', [-1 0]');
+        else
+            plot([z+1 z+1]', [0 1]');
+        end
+    end
+    z=z+1;
+end
+
+subplot(3,1,3)
+a=gca();
+a.data_bounds=[0,-1.5;length(x),1.5]
+a.grid=[1,-1]
+title('PSEUDOTERNARY')
+z=0;
+for i=1:length(x)
+    t=[z:1:z+1];
+     if(x(i)==1)
+        plot(t,0)
+    else
+        if(prev1==1)
+            plot(t,-1)
+            prev1=-1
+        else
+            plot(t,1)
+            prev1=1
+        end
+    end
+    if(x(i)==0 & x(i+1)==0)
+        plot([z+1 z+1]',[-1 1]')
+    end
+    if(i~=length(x) & x(i)~=x(i+1) & x(i)==0)
+        if(prev1==1)
+            plot([z+1 z+1]',[0 prev1]')
+        else
+            plot([z+1 z+1]',[prev1 0]')
+        end
+    end
+    if(i~=length(x) & x(i)==1 & x(i+1)==0)
+        if(prev1==1)
+            plot([z+1 z+1]',[-1 0]')
+        else
+            plot([z+1 z+1]',[0 1]')
+        end
+    end
+    z=z+1    
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+// ASK
+x = [1, 1, 1, 0, 1, 0, 0, 1];
+b = length(x);
+
+subplot(2, 1, 1);
+a = 10;
+f = 1;
+for i = 1:b
+    t = i:0.01:(i+1); 
+    plot(t, a*sin(2*%pi*f*t));
+end
+title('Original Signal');
+xlabel('Time');
+ylabel('Amplitude');
+
+subplot(2, 1, 2);
+for i = 1:b
+    t = i:0.01:(i+1); 
+    if x(i) == 1 then
+        a = 10;
+    else
+        a = 1;
+    end
+    plot(t, a*sin(2*%pi*t));
+end
+title('Amplitude Shift Keying (ASK)');
+xlabel('Time');
+ylabel('Amplitude');
+
+
+
+//FSK
+x = [1, 1, 1, 0, 1, 0, 0, 1];
+b = length(x);
+
+subplot(2, 1, 1);
+a = 10;
+f = 1;
+for i = 1:b
+    t = i:0.01:(i+1); 
+    plot(t, a*sin(2*%pi*f*t));
+end
+title('Original Signal');
+xlabel('Time');
+ylabel('Amplitude');
+
+subplot(2, 1, 2);
+a = 10;
+for i = 1:b
+    t = i:0.01:(i+1); 
+    if x(i) == 1 then
+        f = 1;
+    else
+        f = 3;
+    end
+    plot(t, a*sin(2*%pi*f*t));
+end
+title('Frequency Shift Keying (FSK)');
+xlabel('Time');
+ylabel('Amplitude');
+
+
+
+//PSK
+x = [1, 1, 1, 0, 1, 0, 0, 1];
+b = length(x);
+
+subplot(2, 1, 1);
+a = 10;
+f = 1;
+for i = 1:b
+    t = i:0.01:(i+1); 
+    plot(t, a*sin(2*%pi*f*t));
+end
+title('Original Signal');
+xlabel('Time');
+ylabel('Amplitude');
+
+subplot(2, 1, 2);
+a = 10;
+f = 1;
+for i = 1:b
+    t = i:0.01:(i+1); 
+    if x(i) == 1
+        phi = 0;
+    else
+        phi = %pi;
+    end
+    plot(t, a*sin(2*%pi*f*t + phi));
+end
+title('Phase Shift Keying (PSK)');
+xlabel('Time');
+ylabel('Amplitude');
+
+
+
+//Amplitude Modulation
+clf
+clc
+Ec = 10; // amplitude of career signal
+ma = 1.5; // modulation index
+wm = 2 * %pi * 100;  // modulated signal
+wc = 2 * %pi * 2500; // career signal
+fs = 100000;  // Sampling frequency 
+f = 100;
+x = 0:1/fs:((2/f)-(1/fs));
+
+subplot(3, 1, 1)
+plot(x, sin(wm*x))
+xlabel('Time');
+ylabel('Amplitude');
+title('Message Signal');
+
+subplot(3, 1, 2)
+plot(x, Ec*sin(wc*x))
+xlabel('Time');
+ylabel('Amplitude');
+title('Carrier Signal');
+
+subplot(3, 1, 3)
+y = Ec*(1 + ma*sin(wm*x)) .* sin(wc*x);
+plot(x, y)
+xlabel('Time');
+ylabel('Amplitude');
+title('Amplitude Modulated Signal');
+
+
+
+//Frequency Modulation
+clf
+clc
+Ec = 10; // Amplitude of carrier signal
+mf = 2; // Frequency deviation factor
+fm = 100; // Modulating frequency
+fc = 2500; // Carrier frequency
+fs = 100000; // Sampling frequency 
+t = 0:1/fs:(2/fm)-(1/fs);
+
+subplot(3, 1, 1)
+plot(t, sin(2*%pi*fm*t))
+xlabel('Time');
+ylabel('Amplitude');
+title('Message Signal');
+
+subplot(3, 1, 2)
+plot(t, sin(2*%pi*fc*t))
+xlabel('Time');
+ylabel('Amplitude');
+title('Carrier Signal');
+
+subplot(3, 1, 3)
+kf = mf * (2*%pi*fc);
+fm_signal = sin(2*%pi*fm*t);
+carrier_signal = sin(2*%pi*fc*t);
+fm_modulation = sin(2*%pi*fc*t + kf * fm_signal);
+plot(t, fm_modulation)
+xlabel('Time');
+ylabel('Amplitude');
+title('Frequency Modulated Signal');
+
+
+
+
+//Phase Modulation
+clf
+clc
+
+Ec = 10; // Amplitude of carrier signal
+mf = 2; // Phase deviation factor
+fm = 100; // Modulating frequency
+fc = 20; // Carrier frequency
+fs = 100000; // Sampling frequency 
+t = 0:1/fs:(2/fm)-(1/fs);
+
+subplot(3, 1, 1)
+plot(t, sin(2*%pi*fm*t))
+xlabel('Time');
+ylabel('Amplitude');
+title('Message Signal');
+
+subplot(3, 1, 2)
+plot(t, sin(2*%pi*fc*t))
+xlabel('Time');
+ylabel('Amplitude');
+title('Carrier Signal');
+
+subplot(3, 1, 3)
+kp = mf * (2*%pi*fc);
+fm_signal = sin(2*%pi*fm*t);
+carrier_signal = sin(2*%pi*fc*t);
+pm_modulation = sin(2*%pi*fc*t + kp * fm_signal);
+plot(t, pm_modulation)
+xlabel('Time');
+ylabel('Amplitude');
+title('Phase Modulated Signal');
+
+
+
+
+// PCM
+f=1;
+A=20;
+t=2*%pi;
+N=100;
+T=linspace(0,t,N);
+y=A*sin(2*%pi*T*f);
+plot(T,y);
+sr=2*f;
+k=1;
+for i=1: sr: length (y)
+    X_sample(k)=T(i) ;
+    y_sample(k)=y(i);
+    k=k+1;
+end
+//plot(y_sample)
+axes=get("current_axis");
+axes_x_location="middle";
+
+t_sample=T;
+plot2d3( t_sample , y ) ;
+
+for i=1:length(y_sample)
+   norm_y(i)=y_sample(i)/5;
+end
+
+disp(y_sample)
+code=zeros(1,length(y_sample));
+L=8;
+for i=1:length(y_sample)
+    count=0;
+    for j=-L/2:1:L/2-1
+        if norm_y(i)>=j && norm_y(i)<j+1
+            code(i)=count;
+        else
+            count=count+1;
+        end
+        
+    end
+end
+
+disp(code);
+binary_bits=dec2bin(code)
+disp(binary_bits)
+
+
+
+
+//TDM
+t=2*%pi;
+N=50;
+f=2;
+A=20;
+T=linspace(0,t,N);
+y1=A*sin(2*%pi*f*T);
+y2=A*2*sin(2*%pi*f*0.5*T);
+y3=A*cos(2*%pi*f*T);
+
+subplot(3,3,1);
+plot(T,y1);
+title('signal-1');
+
+subplot(3,3,2);
+plot(T,y2);
+title('signal-2');
+
+subplot(3,3,3);
+plot(T,y3);
+title('signal-3');
+
+td=0;
+j=1;
+for i=1:3:3*length(T)
+    td(i)=y1(j);
+    i=i+1;
+    td(i)=y2(j);
+    i=i+1;
+    td(i)=y3(j);
+    i=i+1;
+    j=j+1;
+end
+
+subplot(3,3,5)
+plot2d3(td);
+title('Multiplexing-signal');
+
+dy1 = 0;
+dy2 =0;
+dy3 = 0;
+
+j = 1;
+for i = 1:3:length(td)
+    dy1(j) = td(i);
+    dy2(j) = td(i + 1);
+    dy3(j) = td(i + 2);
+    j = j + 1;
+end
+
+subplot(3, 3, 7);
+plot(T, dy1);
+title('Demultiplexed signal-1');
+
+subplot(3, 3, 8);
+plot(T, dy2);
+title('Demultiplexed signal-2');
+
+subplot(3, 3, 9);
+plot(T, dy3);
+title('Demultiplexed signal-3');

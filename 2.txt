@@ -1,0 +1,1073 @@
+// Practical-1
+
+#  Write data in json file
+fd=require('fs'); // import fs as fd
+
+//Create JSON object
+const str1={name:'Ansh',age:20,city:'Ahmedabad'};
+const str2={name:'Sezan',age:20,city:'Bhavnagar'};
+const str3={name:'Abhi',age:20,city:'Dahod'};
+
+const dataArray = [str1, str2, str3];
+
+//Convert JSON object to a string
+const jsonString1=JSON.stringify(dataArray,null,10); //10 is space for key pair value (in range of 1-10)
+
+//Specify the file path
+const filePath='Prac-1.json';
+
+//Write JSON string to a file
+fd.writeFile(filePath, jsonString1, 'utf-8', (err)=>{
+    console.log("Done"+err);
+})
+
+console.log(jsonString1);
+
+
+
+#  Read data from json file
+// Reading data from a JSON file
+const fs=require('fs');
+
+const filePath='Prac-1.json';
+const jsonData=fs.readFileSync(filePath, 'utf-8'); 
+const dataArray = JSON.parse(jsonData);
+dataArray.forEach(element => {
+    console.log("Name is " + element.name);
+    console.log("Age is " + element.age);
+    console.log("City is " + element.city);
+    console.log('------------------------');
+});
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Random 2D JSON File
+[
+  {"col1": 1, "col2": 2, "col3": 3},
+  {"col1": 4, "col2": 5, "col3": 6},
+  {"col1": 7, "col2": 8, "col3": 9}
+]
+
+Code to access it - 
+
+const fs = require('fs');
+
+// Read the JSON file
+fs.readFile('example.json', 'utf8', (err, data) => {
+  if (err) {
+    console.error('Error reading file:', err);
+    return;
+  }
+
+  try {
+    // Parse the JSON data
+    const jsonData = JSON.parse(data);
+
+    // Convert the JSON data into a 2D array
+    const array2D = jsonData.map(row => Object.values(row));
+
+    // Display the 2D array
+    console.log('2D Array:', array2D);
+  } catch (error) {
+    console.error('Error parsing JSON:', error);
+  }
+});
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Practical-2 
+
+# Multi-dimentional array
+// Create a multi-dimensional JSON array
+const multiDimArray = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+    ['apple', 'banana', 'orange']
+];
+
+// Display the multi-dimensional JSON array
+console.log('Multi-dimensional JSON Array:');
+console.log(multiDimArray);
+  
+// Accessing individual elements
+console.log('Accessing individual elements:');
+console.log('Element at [0][1]:', multiDimArray[0][1]); // Output: 2
+console.log('Element at [2][2]:', multiDimArray[2][2]); // Output: 9
+console.log('Element at [3][0]:', multiDimArray[3][0]); // Output: 'apple'
+
+
+#  States and Districts
+
+const fs = require('fs');
+
+const filepath = 'states-and-districts.json';
+const jsonData = fs.readFileSync(filepath,'utf-8'); //reading file in synchronous manner
+const data = JSON.parse(jsonData); //convert into obj
+
+fs.readFile(filepath,'utf-8', (err,data)=>{
+    if (err) {
+        console.error('Error reading the JSON file:', err);
+        return;
+    }
+    try {
+        const obj = JSON.parse(data);
+        let enterstate = "Gujarat";
+        console.log("DISTRICTS ARE : ");
+
+        for(i in obj["states"]){
+            let districtArr = obj["states"][i]["districts"];
+            if(obj["states"][i]["state"]==enterstate){
+                if(districtArr.length > 6){
+                    for(let j=0;j<3;j++ ){
+                        console.log((j+1),obj["states"][i]["districts"][j]);
+                    }
+                    for(let j=0;j<3;j++){
+                        console.log('.');
+                    }
+                    for(let j=districtArr.length-3;j<districtArr.length;j++){
+                        console.log((j+1),obj["states"][i]["districts"][j]);
+                    }
+                }
+                else{
+                    for(let j=0;j<districtArr.length;j++ ){
+                        console.log((j+1),obj["states"][i]["districts"][j]);
+                    }
+                }
+            }
+        }
+    }
+    catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+    }
+});
+
+
+
+# To-do List
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List App</title>
+  <style>
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      margin: 5px 0;
+    }
+    .completed {
+      
+    }
+  </style>
+</head>
+<body>
+  <h1>To-do List App</h1>
+  <input type="text" id="taskInput" placeholder="Add a new task">
+  <button onclick="addTask()">Add Task</button>
+
+  <h2>Incomplete Tasks</h2>
+  <ul id="incompleteTaskList"></ul>
+
+  <h2>Completed Tasks</h2>
+  <ul id="completedTaskList"></ul>
+
+  <script>
+    let tasks = [
+      { id: 1, text: 'Complete assignment', completed: false },
+      { id: 2, text: 'Read a book', completed: true },
+      { id: 3, text: 'Go for a run', completed: false }
+    ];
+
+    function displayTasks() {
+      const incompleteTaskListElement = document.getElementById('incompleteTaskList');
+      const completedTaskListElement = document.getElementById('completedTaskList');
+      incompleteTaskListElement.innerHTML = '';
+      completedTaskListElement.innerHTML = '';
+
+      tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.textContent = task.text;
+        if (task.completed) {
+          li.classList.add('completed');
+          completedTaskListElement.appendChild(li);
+        }
+        else {
+          incompleteTaskListElement.appendChild(li);
+        }
+        li.onclick = () => toggleTaskStatus(task.id);
+      });
+    }
+    
+    function addTask() {
+      const taskInput = document.getElementById('taskInput');
+      const newTaskText = taskInput.value.trim();
+      if (newTaskText !== '') {
+        const newTask = {
+          id: tasks.length + 1,
+          text: newTaskText,
+          completed: false
+        };
+        tasks.push(newTask);
+        displayTasks();
+        taskInput.value = '';
+      }
+    }
+    
+    function toggleTaskStatus(taskId) {
+      const taskIndex = tasks.findIndex(task => task.id === taskId);
+      if (taskIndex !== -1) {
+        tasks[taskIndex].completed = !tasks[taskIndex].completed;
+        displayTasks();
+      }
+    }
+
+    displayTasks();
+  </script>
+
+</body>
+</html>
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Practical-3 (Dynamic Webpage)
+
+#  html file
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width: device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Prac3.css">
+    <title>Web Page</title>
+</head>
+<body>
+    <header>
+        <h1>Rohit Sharma</h1>
+    </header>
+    <section>
+        <picture>
+            <source srcset="Indore_Hundred.jpg" media="(max-width: 800px)">
+            <source srcset="Dharamshala_Hundred.jpg" media="(max-width: 1200px)"> 
+            <source srcset="Rohit_Sharma.jpg">
+            <img src="img_flowers.jpg" alt="Flowers" style="width:auto;">
+        </picture>
+    </section>
+    <section id="text">
+        <div class="container">
+            <div class="column">
+                <p>Rohit Sharma, the swashbuckling opener, wasn't always the "Hitman" we know today. Early in his career, inconsistency plagued him, raising doubts about his future. But Rohit, fuelled by grit and determination, turned the tide. His IPL stint with Mumbai Indians proved pivotal. Under its captaincy, he blossomed, displaying his explosive talent and astute leadership. Five IPL trophies under his belt cemented his reputation as a champion captain.</p>
+            </div>
+            <div class="column">
+                <p>This success translated onto the international stage. Rohit's elegant strokeplay and powerful hitting broke records, with three ODI double centuries a testament to his prowess. He donned the captain's mantle for India, leading them to victory in various tournaments. His calm demeanour and tactical nous inspire his teammates, forging a formidable unit.</p>
+            </div>
+            <div class="column">
+                <p>Rohit's journey isn't over yet. He continues to redefine batting with his audacious strokes, while his captaincy evolves with each match. The Hitman's legacy is still being written, each innings a thrilling chapter in the saga of Indian cricket.</p>
+            </div>
+        </div>
+    </section>
+    <section>
+        <h2>Watch some of his great knocks</h2>
+        <section id="videos">
+            <p>1] 171 v/s Australia, 2016</p>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/DDNaqiiIc_U?si=mus9i5lF4DY7UpUS" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <p>2] 115 v/s South Africa, 2018</p>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/hNZqEPH7OVo?si=hPnEGPMBMVUzR2A4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </section>
+    </section>
+</body>
+</html>
+
+
+#  css file (media query)
+
+@media screen and (max-width: 600px) {
+    section {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    p {
+        font-size: 1vw;
+    }
+
+    section {
+        padding: 15px;
+    }
+}
+
+@media only screen and (max-width: 1200px) { 
+    .column {
+      width: 33.33%;
+    }
+}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Practical-4 
+
+# Geolocation API and Local Storage
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation Example</title>
+    <style>
+        #location-info {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Geolocation Example</h1>
+
+    <div id="location-info">
+        <strong>Latitude:</strong> <span id="latitude"></span><br>
+        <strong>Longitude:</strong> <span id="longitude"></span><br>
+        <strong>Last Update:</strong>
+        <ul id="timestamp-list"></ul>
+    </div>
+
+    <script>
+        // Check if the browser supports the Geolocation API
+        if (navigator.geolocation) {
+            
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        }
+        else {
+            showError("Geolocation is not supported by this browser.");
+        }
+
+        // Callback function to handle the successful retrieval of the user's location
+        function showPosition(position) {
+            
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            var timestamp = new Date();
+
+            var storedData = JSON.parse(localStorage.getItem("geolocationData")) || [];
+
+            // Add current data to the array
+            storedData.unshift({
+                latitude: latitude.toFixed(6),
+                longitude: longitude.toFixed(6),
+                timestamp: timestamp.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+            });
+
+            storedData = storedData.slice(0, 10);
+
+            localStorage.setItem("geolocationData", JSON.stringify(storedData));
+
+            document.getElementById("latitude").textContent = latitude.toFixed(6);
+            document.getElementById("longitude").textContent = longitude.toFixed(6);
+            displayTimestamps(storedData);
+        }
+
+        function displayTimestamps(data) {
+            var timestampList = document.getElementById("timestamp-list");
+            timestampList.innerHTML = "";
+
+            data.forEach(function (entry) {
+                var listItem = document.createElement("li");
+                listItem.textContent = entry.timestamp;
+                timestampList.appendChild(listItem);
+            });
+        }
+
+        // Callback function to handle errors during the retrieval of the user's location
+        function showError(error) {
+            var errorMessage;
+
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    errorMessage = "An unknown error occurred.";
+                    break;
+                default:
+                    errorMessage = "An unspecified error occurred.";
+                    break;
+            }
+
+            alert(errorMessage);
+        }
+
+        var storedData = JSON.parse(localStorage.getItem("geolocationData")) || [];
+        displayTimestamps(storedData);
+    </script>
+</body>
+</html>
+
+
+#  Drag and Drop API
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+
+        .draggable-item {
+            width: 100px;
+            height: 50px;
+            background-color: aquamarine;
+            color: black;
+            text-align: center;
+            line-height: 50px;
+            margin: 10px;
+            cursor: move;
+        }
+
+        .dropzone {
+            width: 200px;
+            height: 200px;
+            background-color: #f0f0f0;
+            border: 2px dashed #999;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="draggable-item" draggable="true" data-item="Item 1">Item 1</div>
+        <div class="draggable-item" draggable="true" data-item="Item 2">Item 2</div>
+        <div class="draggable-item" draggable="true" data-item="Item 3">Item 3</div>
+    </div>
+
+    <div class="container">
+        <div class="dropzone" id="dropzone1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div class="dropzone" id="dropzone2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div class="dropzone" id="dropzone3" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+
+    <script>
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function dragStart(event) {
+            event.dataTransfer.setData("text/plain", event.target.dataset.item);
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            var data = event.dataTransfer.getData("text/plain");
+            var droppedItem = document.createElement("div");
+            droppedItem.className = "draggable-item";
+            droppedItem.textContent = data;
+            event.target.appendChild(droppedItem);
+        }
+        
+        var draggableItems = document.querySelectorAll('.draggable-item');
+        draggableItems.forEach(function(item) {
+            item.addEventListener('dragstart', dragStart);
+        });
+    </script>
+</body>
+</html>
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Practical-5 (Student Registration)
+
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Student Registration</title> 
+  <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" 
+rel="stylesheet"> 
+   
+  <style> 
+    .container { 
+      max-width: 500px; 
+      margin: auto; 
+      background-color: #f9f9f9; 
+      padding: 20px; 
+      border-radius: 10px; 
+    } 
+    h1 { 
+      text-align: center; 
+      margin-bottom: 30px; 
+    } 
+    .form-control { 
+      border-radius: 5px; 
+    } 
+    button[type="submit"] { 
+      width: 100%; 
+      margin-top: 20px; 
+    } 
+  </style> 
+</head> 
+<body> 
+ 
+  <div class="container mt-5"> 
+    <h1>Student Registration</h1> 
+    <form> 
+      <div class="mb-3"> 
+        <label for="rollNumber" class="form-label">Roll Number</label> 
+        <input type="text" class="form-control" id="rollNumber" placeholder="Enter 
+Roll Number"> 
+      </div> 
+      <div class="mb-3"> 
+        <label for="firstName" class="form-label">First Name</label> 
+        <input type="text" class="form-control" id="firstName" placeholder="Enter 
+First Name"> 
+      </div> 
+      <div class="mb-3"> 
+        <label for="mobileNumber" class="form-label">Mobile Number</label> 
+        <input type="tel" class="form-control" id="mobileNumber" placeholder="Enter 
+Mobile Number"> 
+      </div> 
+      <div class="mb-3"> 
+        <label for="email" class="form-label">Email ID</label> 
+        <input type="email" class="form-control" id="email" placeholder="Enter 
+Email ID"> 
+      </div> 
+      <div class="mb-3"> 
+        <label for="address" class="form-label">Address</label> 
+        <textarea class="form-control" id="address" rows="3" placeholder="Enter 
+Address"></textarea> 
+      </div> 
+      <button type="submit" class="btn btn-primary">Submit</button> 
+    </form> 
+  </div> 
+ 
+  <script 
+src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js">
+ </script> 
+</body> 
+</html>
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Practical-6 (Tailwind - Book Registration)
+
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Combined Document</title> 
+    <script src="https://cdn.tailwindcss.com"></script> 
+    <style> 
+        /* Common styles from both files */ 
+        body { 
+            margin: 0; 
+            padding: 0; 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background-size: cover; 
+            background-position: center; 
+            background-color:blue; 
+        } 
+        body:hover { 
+            background-color:aqua; 
+        } 
+        .overlay { 
+            background-color: rgba(0, 0, 0, 0.5); 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        } 
+        .content { 
+            background-color:black; 
+            color: white; 
+            border-radius: 10px; 
+            font-family: Arial, Helvetica, sans-serif; 
+            padding: 20px; 
+            width: 70%; 
+            max-width: 500px; 
+            position: relative; 
+        } 
+        .content:hover { 
+            background-color:darkblue; 
+            color:white; 
+            transform: translateX(-5px); 
+        } 
+        h1 { 
+            font-size: 3rem; 
+            font-weight: bold; 
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans serif; 
+            margin-bottom: 1rem; 
+        } 
+    </style> 
+</head> 
+<body> 
+    <!-- Hover area --> 
+    <div class="overlay" id="hoverArea" onclick="showBookForm()"> 
+        <div class="content"> 
+            <p class="text-center">Tailwind CSS</p> 
+            <p class="text-center">Click me!</p> 
+        </div> 
+    </div> 
+ 
+    <!-- Book information form --> 
+    <div id="bookForm" style="display: none;"> 
+        <div class="container mx-auto bg-rose-400 shadow-lg rounded-lg p-8 max-w-md hover:bg-slate-950"> 
+            <form action="#" class="space-y-4"> 
+                <div class="text-center"> 
+                    <h1 class="text-3xl font-bold text-purple-600">SUBMIT THE FORM</h1> 
+                </div> 
+                <div> 
+                    <label for="title" class="block text-sm font-semibold text gray-700 mb-1">Book Title:</label> 
+                    <input type="text" id="title" name="title" required class="w full rounded-md p-2 border focus:border-purple-400 focus:outline-none" placeholder="Enter book title"> 
+                </div> 
+                <div> 
+                    <label for="author" class="block text-sm font-semibold text gray-700 mb-1">Author Name:</label> 
+                    <input type="text" id="author" name="author" class="w-full rounded-md p-2 border focus:border-purple-400 focus:outline-none" placeholder="Enter author name"> 
+                </div>
+                <div>
+                    <label for="publisher" class="block text-sm font-semibold text gray-700 mb-1">Publisher Name:</label> 
+                    <input type="text" id="publisher" name="publisher" class="w full rounded-md p-2 border focus:border-purple-400 focus:outline-none" placeholder="Enter publisher name"> 
+                </div> 
+                <div> 
+                    <label for="year" class="block text-sm font-semibold text-gray 700 mb-1">Publishing Year:</label> 
+                    <input type="number" id="year" name="year" class="w-full  rounded-md p-2 border focus:border-purple-400 focus:outline-none" placeholder="Enter publishing year"> 
+                </div> 
+                <div> 
+                    <label for="isbn" class="block text-sm font-semibold text-gray 700 mb-1">ISBN:</label> 
+                    <input type="text" id="isbn" name="isbn" class="w-full rounded md p-2 border focus:border-purple-400 focus:outline-none" placeholder="Enter ISBN"> 
+                </div> 
+                <div> 
+                    <label for="quantity" class="block text-sm font-semibold text gray-700 mb-1">Quantity:</label> 
+                    <input type="number" id="quantity" name="quantity" class="w full rounded-md p-2 border focus:border-purple-400 focus:outline-none" placeholder="Enter quantity"> 
+                </div> 
+                <div class="text-center"> 
+                    <button type="submit" class="bg-sky-300 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-300 transform hover:rotate 45">SUBMIT</button> 
+                </div> 
+            </form> 
+        </div> 
+    </div> 
+ 
+    <script> 
+        function showBookForm() { 
+            var hoverArea = document.getElementById("hoverArea"); 
+            var bookForm = document.getElementById("bookForm"); 
+ 
+            hoverArea.style.display = "none"; 
+            bookForm.style.display = "block"; 
+        } 
+    </script> 
+</body> 
+</html>
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Practical-7 (VUE JS)
+
+# UpperCase text
+
+
+--- html code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue JS</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+</head>
+<body>
+    <div id="app">
+        <p v-uppercase>Hello, this text will be uppercased when clicked!</p>
+    </div>
+    <script>
+    	Vue.directive('uppercase', {
+    bind(el) {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => {
+            const text = el.innerText;
+            el.innerText = text.toUpperCase();
+            });
+        }
+    });
+    new Vue({
+    el: '#app'
+});
+    </script>
+</body>
+</html>
+
+
+
+# Dynamic List
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic List with Vue.js Custom Directive</title>
+  <style>
+    body {
+      margin: 50px;
+    }
+    button {
+      background-color: #007bff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>Dynamic List</h1>
+    <ul>
+      <li v-for="(item, index) in items" :key="index">{{ item }}</li>
+    </ul>
+    <button @click="addItem">Add Item</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script>
+    Vue.directive('uppercase', {
+      bind(el, binding, vnode) {
+        el.textContent = binding.value.toUpperCase();
+      }
+    });
+
+    new Vue({
+      el: '#app',
+      data: {
+        items: ['item 1', 'item 2', 'item 3']
+      },
+      methods: {
+        addItem() {
+          this.items.push('new item');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+# Date Display
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Directive for Date Formatting</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+</head>
+<body>
+    <div id="app">
+        <p v-format-date="date">
+            <!-- Content will be manipulated by the custom directive -->
+        </p>
+    </div>
+
+    <script>
+        // Define the custom directive named 'format-date'
+        Vue.directive('format-date', {
+            // When the bound element is inserted into the DOM...
+            inserted: function(el, binding) {
+                // Get the date from the binding value
+                const date = binding.value;
+                // Format the date into a human-readable format
+                const formattedDate = formatDate(date);
+                // Update the element's content with the formatted date
+                el.textContent = formattedDate;
+            }
+        });
+
+        new Vue({
+            el: '#app',
+            data: {
+                date: '2022-03-05T12:00:00' // Sample date
+            }
+        });
+
+        // Helper function to format the date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+    </script>
+</body>
+</html>
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Practical-8
+
+const mysql = require('mysql');
+
+const dbconnection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'Ansh_1116',
+    database: 'fswd'
+});
+
+dbconnection.connect((msg) => {
+    if (msg) {
+        console.log("Error in connection");
+    }
+    console.log("Connected");
+});
+
+const sql = 'CREATE TABLE IF NOT EXISTS student(id int auto_increment, name text, primary key (id))';
+
+dbconnection.query(sql, (err, result) => {
+    if (err) {
+        console.log("Error in create table");
+    } else {
+        console.log(result);
+    }
+});
+
+const insertRow = "INSERT INTO student (name) VALUES ('Ansh Bhavsar')";
+
+dbconnection.query(insertRow, (err, result) => {
+    if (err) {
+        console.log("Error in inserting row");
+    } else {
+        console.log(result);
+    }
+});
+
+const updateRow = "UPDATE student SET name = 'Updated Name' WHERE id = 1";
+
+dbconnection.query(updateRow, (err, result) => {
+    if (err) {
+        console.log("Error in updating row");
+    } else {
+        console.log(result);
+    }
+});
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Practical-9
+
+// vulnerability issue
+
+const mysql = require('mysql');
+
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'Ansh_1116',
+  database: 'fswd'
+});
+
+connection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL');
+    return;
+  }
+  console.log('Connected');
+});
+
+function createTable() {
+  const sql = `CREATE TABLE IF NOT EXISTS Prac9 (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    age INT
+  )`;
+  connection.query(sql, (error, results) => {
+    if (error) {
+        throw error;
+    }
+    console.log('Table created or already exists');
+  });
+}
+
+function insertRecord(name, age) {
+  const data = { name: name, age: age };
+  connection.query('INSERT INTO Prac9 SET ?', data, (error, results) => {
+    if (error) throw error;
+    console.log('Inserted record:');
+    console.log(data);
+  });
+}
+
+function deleteRecord(id) {
+  connection.query('DELETE FROM Prac9 WHERE id = ?', [id], (error, results) => {
+    if (error) throw error;
+    console.log(`Deleted record with ID ${id}`);
+  });
+}
+
+function selectRecords() {
+  connection.query('SELECT * FROM Prac9', (error, results) => {
+    if (error) throw error;
+    console.log('Selected all records:');
+    console.log(results);
+  });
+}
+
+function selectUnique(columnName) {
+  connection.query(`SELECT DISTINCT ${columnName} FROM Prac9`, (error, results) => {
+    if (error) throw error;
+    console.log(`Selected unique values from column ${columnName}:`);
+    console.log(results);
+  });
+}
+
+function dropTable(tableName) {
+  connection.query(`DROP TABLE IF EXISTS ${tableName}`, (error, results) => {
+    if (error) throw error;
+    console.log(`Dropped table ${tableName}`);
+  });
+}
+
+createTable();
+
+insertRecord('Ansh Bhavsar', 20);
+insertRecord('Sezan Agvan', 19);
+insertRecord('Abhi Patel', 21);
+insertRecord('Aryan Parekh', 20);
+insertRecord('Vashita Darji', 21);
+insertRecord('MS Dhoni', 42);
+insertRecord('Rohit Sharma', 37);
+insertRecord('Virat Kohli', 35);
+deleteRecord(1);
+selectRecords();
+selectUnique('name');
+//dropTable('Prac9');
+
+connection.end((err) => {
+  if (err) {
+    console.error('Error closing MySQL connection: ' + err.stack);
+    return;
+  }
+  console.log('Closed MySQL connection');
+});
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Practical-10 (MongoDB)
+
+// create.js
+
+const { MongoClient } = require('mongodb');
+
+async function main() { //contain the main logic for interacting with the MongoDB database.
+const uri = 'mongodb://localhost:27017'; //URI indicates the location of the MongoDB server.
+const client = new MongoClient(uri); // instance of MongoClient is created
+try {
+await client.connect();
+const database = client.db('mydatabase');
+const collection = database.collection('mycollection'); //Accessing Database and Collection
+const result = await collection.insertOne({ name: 'Vashita', age: 20, rollno: '22BCE056' });
+console.log(`Document inserted with id: ${result.insertedId}`);
+} finally {
+await client.close();
+}
+}
+main().catch(console.error);
+
+to run - node .\create.js
+
+
+//read.js
+const { MongoClient } = require('mongodb');
+async function main() {
+const uri = 'mongodb://localhost:27017';
+const client = new MongoClient(uri);
+try {
+await client.connect();
+const database = client.db('mydatabase');
+const collection = database.collection('mycollection');
+const documents = await collection.find({}).toArray();
+console.log('Documents:');
+console.log(documents);
+} finally {
+await client.close();
+}
+}
+main().catch(console.error);
+
+to run - node .\read.js
+
+
+//update.js
+const { MongoClient } = require('mongodb');
+async function main() {
+const uri = 'mongodb://localhost:27017';
+const client = new MongoClient(uri);
+try {
+await client.connect();
+const database = client.db('mydatabase');
+const collection = database.collection('mycollection');
+const result = await collection.updateMany({ name: 'Vashita' }, { $set: { age: 21 } });
+console.log(`${result.modifiedCount} documents updated.`);
+} finally {
+await client.close();
+}
+}
+main().catch(console.error);
+  
+  to run - node .\update.js
+
+// delete.js
+const { MongoClient } = require('mongodb');
+async function main() {
+const uri = 'mongodb://localhost:27017';
+const client = new MongoClient(uri);
+try {
+await client.connect();
+const database = client.db('mydatabase');
+const collection = database.collection('mycollection');
+const result = await collection.deleteMany({ name: 'Vashita' });
+console.log(`${result.deletedCount} documents deleted.`);
+} finally {
+await client.close();
+}
+}
+main().catch(console.error);
+
+To run - node .\delete.js
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
